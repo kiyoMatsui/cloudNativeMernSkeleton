@@ -1,0 +1,49 @@
+##
+image:
+  registry: 
+  repository: mernapp
+  tag: localbuild
+  ## Specify a imagePullPolicy
+  ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
+  pullPolicy: Never
+kubeVersion:
+getAppFromExternalRepository: false
+repository:
+revision: master
+replicaCount: 1
+applicationPort: 3000
+podAffinityPreset: ''
+podAntiAffinityPreset: soft
+##
+## Configure extra options for liveness and readiness probes
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+##
+livenessProbe:
+  enabled: true
+  path: '/'
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+readinessProbe:
+  enabled: true
+  path: '/'
+  initialDelaySeconds: 30
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+
+mongodb:
+  enabled: true
+  auth:
+    enabled: true
+    rootPassword: ''
+
+    ## MongoDB(R) custom user and database
+    ## ref: https://github.com/bitnami/bitnami-docker-mongodb/blob/master/README.md#creating-a-user-and-database-on-first-run
+    ##
+    username: user
+    database: mernproject
+    password: secret_password
