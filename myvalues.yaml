@@ -47,3 +47,9 @@ mongodb:
     username: user
     database: mernproject
     password: secret_password
+    
+ingress:
+  enabled: true
+  host: 
+service:
+  type: ClusterIP
