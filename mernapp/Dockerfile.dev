@@ -5,4 +5,4 @@ WORKDIR /app
 
 EXPOSE 3000
 
-CMD bash -c "NODE_ENV=development; npm install; npm run build; echo ===; echo ===; echo ===; echo === App built and launching ===; npm run development;"
+CMD bash -c "NODE_ENV=development; npm install; npm run build; echo ===; echo ===; echo ===; echo === App built and launching ===; npm run development"
