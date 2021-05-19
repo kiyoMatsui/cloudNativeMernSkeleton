@@ -1,6 +1,8 @@
-config/amongo/*
-config/amongo/*
-!config/amongo/mongo-init.js
+config/mongo/*
+config/mongo/*
+!config/mongo/zzzmongo-init.js
+!config/mongo/zzzmongo.conf
+mernapp/node_modules/
 mernapp/dist
 
 logs
@@ -42,7 +44,6 @@ bower_components
 build/Release
 
 # Dependency directories
-mernapp/node_modules/
 jspm_packages/
 
 # TypeScript v1 declaration files

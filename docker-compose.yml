@@ -1,52 +1,63 @@
-version: '3'
+version: '3.3'
 services:
-  mern:
-    build: 
-      context: './mernapp'
-      dockerfile: 'Dockerfile.dev'
-    ports:
-      - "3000:3000"
-    depends_on: 
-      - mongodb
-    volumes:
-      - "./mernapp:/app"
-    environment:
-      - NODE_ENV=development
-      - DATABASE_HOST=mongodb
-      - DATABASE_PORT=27017
-      - DATABASE_USER=user
-      - DATABASE_PASSWORD=secret_password
-      - DATABASE_NAME=mernproject
-      - DATABASE_CONNECTION_OPTIONS=none
-      - DOCKER_COMPOSE=true
-  gamestats:
-    build: 
-      context: './gamestats'
-      dockerfile: 'Dockerfile'
-    depends_on: 
-      - mongodb
-    environment:
-      - NODE_ENV=development
 
   mongodb:
+    container_name: mongodb
     image: mongo:latest
+    ports:
+      - "27017:27017"
+    networks:
+      - backend
     volumes:
-      - ./config/amongo:/data/db
-      - ./config/amongo/mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./config/mongo:/data/db
+      - ./config/mongo/zzzmongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+      - ./config/mongo/zzzmongo.conf:/etc/mongod.conf
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=rootpword
       - MONGO_INITDB_DATABASE=admin
+
+             
+#  nginx:
+#    container_name: nginx
+#    image: nginx:latest
+#    ports:
+#      - "443:443"
+#    networks:
+#      - backend
+#    depends_on: 
+#      - mernapp
+#    volumes:
+#      - ./mernapp/dist:/srv/www/static
+#      - ./config/nginx/nginxConfig.conf:/etc/nginx/conf.d/default.conf
+#      - ./config/nginx:/etc/nginx/ssl
+#      
+#  mernapp:
+#    container_name: mernapp
+#    build: 
+#      context: './mernapp'
+#      dockerfile: 'Dockerfile'
+#    ports:
+#      - "3000:3000"
+#      - "9229:9229"
+#    networks:
+#      - backend
+#    depends_on: 
+#      - mongodb
+#    volumes:
+#      - "./mernapp:/app"
+#    environment:
+#      - NODE_ENV=development
+#      - DATABASE_HOST=mongodb
+#      - DATABASE_PORT=27017
+#      - DATABASE_USER=user
+#      - DATABASE_PASSWORD=secret_password
+#      - DATABASE_NAME=mernproject
+#      - DATABASE_CONNECTION_OPTIONS=authSource=mernproject
+#      - DOCKER_COMPOSE=true
+
       
-  nginx:
-    image: nginx:latest
-    ports:
-      - "443:443"
-    volumes:
-      - ./mernapp/dist:/srv/www/static
-      - ./config/anginx/nginxConfig.conf:/etc/nginx/conf.d/default.conf
-      - ./config/anginx:/etc/nginx/ssl
-    depends_on:
-      - mern
-      - gamestats
-    
+networks:
+  backend:
+    name: mongodbnet
+    driver: bridge
