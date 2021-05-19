@@ -44,8 +44,6 @@ services:
 #      - backend
 #    depends_on: 
 #      - mongodb
-#    volumes:
-#      - "./mernapp:/app"
 #    environment:
 #      - NODE_ENV=development
 #      - DATABASE_HOST=mongodb
