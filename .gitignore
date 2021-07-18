@@ -4,6 +4,7 @@ config/mongo/*
 !config/mongo/zzzmongo.conf
 mernapp/node_modules/
 mernapp/dist
+beastmultichat/build/
 
 logs
 *.log
