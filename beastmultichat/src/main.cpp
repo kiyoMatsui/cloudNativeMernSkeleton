@@ -19,9 +19,9 @@
 //------------------------------------------------------------------------------
 
 #include <boost/asio/signal_set.hpp>
-#include <boost/smart_ptr.hpp>
 #include <iostream>
 #include <vector>
+#include <memory>
 
 #include "listener.hpp"
 #include "shared_state.hpp"
@@ -36,14 +36,14 @@ int main(int argc, char* argv[]) {
   }
   auto address = net::ip::make_address(argv[1]);
   auto port = static_cast<unsigned short>(std::atoi(argv[2]));
-  auto doc_root = argv[3];
-  const uint64_t threads = std::max<uint64_t>(1, static_cast<uint64_t>(std::atoi(argv[4])));
+  std::string_view doc_root = argv[3];
+  const uint64_t threads = std::max<uint64_t>(1, std::stoul(argv[4]));
 
   // The io_context is required for all I/O
   net::io_context ioc;
 
   // Create and launch a listening port
-  boost::make_shared<listener>(ioc, tcp::endpoint{address, port}, boost::make_shared<shared_state>(doc_root))->run();
+  std::make_shared<listener>(ioc, tcp::endpoint{address, port}, std::make_shared<shared_state>(doc_root))->run();
 
   // Capture SIGINT and SIGTERM to perform a clean shutdown
   net::signal_set signals(ioc, SIGINT, SIGTERM);

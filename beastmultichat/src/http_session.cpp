@@ -8,7 +8,7 @@
 //
 
 #include "http_session.hpp"
-
+#include <algorithm>
 #include <boost/config.hpp>
 #include <iostream>
 
@@ -19,40 +19,39 @@
 //------------------------------------------------------------------------------
 
 // Return a reasonable mime type based on the extension of a file.
-beast::string_view mime_type(beast::string_view path) {
-  using beast::iequals;
+std::string_view mime_type(std::string_view path) {
   auto const ext = [&path] {
     auto const pos = path.rfind(".");
-    if (pos == beast::string_view::npos) return beast::string_view{};
-    return path.substr(pos);
+    if (pos == std::string_view::npos) return std::string_view{};
+    return path; //.substr(pos);
   }();
-  if (iequals(ext, ".htm")) return "text/html";
-  if (iequals(ext, ".html")) return "text/html";
-  if (iequals(ext, ".php")) return "text/html";
-  if (iequals(ext, ".css")) return "text/css";
-  if (iequals(ext, ".txt")) return "text/plain";
-  if (iequals(ext, ".js")) return "application/javascript";
-  if (iequals(ext, ".json")) return "application/json";
-  if (iequals(ext, ".xml")) return "application/xml";
-  if (iequals(ext, ".swf")) return "application/x-shockwave-flash";
-  if (iequals(ext, ".flv")) return "video/x-flv";
-  if (iequals(ext, ".png")) return "image/png";
-  if (iequals(ext, ".jpe")) return "image/jpeg";
-  if (iequals(ext, ".jpeg")) return "image/jpeg";
-  if (iequals(ext, ".jpg")) return "image/jpeg";
-  if (iequals(ext, ".gif")) return "image/gif";
-  if (iequals(ext, ".bmp")) return "image/bmp";
-  if (iequals(ext, ".ico")) return "image/vnd.microsoft.icon";
-  if (iequals(ext, ".tiff")) return "image/tiff";
-  if (iequals(ext, ".tif")) return "image/tiff";
-  if (iequals(ext, ".svg")) return "image/svg+xml";
-  if (iequals(ext, ".svgz")) return "image/svg+xml";
+  if (ext.find(".htm") != std::string_view::npos) return "text/html";
+  if (ext.find(".html") != std::string_view::npos) return "text/html";
+  if (ext.find(".php") != std::string_view::npos) return "text/html";
+  if (ext.find(".css") != std::string_view::npos) return "text/css";
+  if (ext.find(".txt") != std::string_view::npos) return "text/plain";
+  if (ext.find(".js") != std::string_view::npos) return "application/javascript";
+  if (ext.find(".json") != std::string_view::npos) return "application/json";
+  if (ext.find(".xml") != std::string_view::npos) return "application/xml";
+  if (ext.find(".swf") != std::string_view::npos) return "application/x-shockwave-flash";
+  if (ext.find(".flv") != std::string_view::npos) return "video/x-flv";
+  if (ext.find(".png") != std::string_view::npos) return "image/png";
+  if (ext.find(".jpe") != std::string_view::npos) return "image/jpeg";
+  if (ext.find(".jpeg") != std::string_view::npos) return "image/jpeg";
+  if (ext.find(".jpg") != std::string_view::npos) return "image/jpeg";
+  if (ext.find(".gif") != std::string_view::npos) return "image/gif";
+  if (ext.find(".bmp") != std::string_view::npos) return "image/bmp";
+  if (ext.find(".ico") != std::string_view::npos) return "image/vnd.microsoft.icon";
+  if (ext.find(".tiff") != std::string_view::npos) return "image/tiff";
+  if (ext.find(".tif") != std::string_view::npos) return "image/tiff";
+  if (ext.find(".svg") != std::string_view::npos) return "image/svg+xml";
+  if (ext.find(".svgz") != std::string_view::npos) return "image/svg+xml";
   return "application/text";
 }
 
 // Append an HTTP rel-path to a local filesystem path.
 // The returned path is normalized for the platform.
-std::string path_cat(beast::string_view base, beast::string_view path) {
+std::string path_cat(std::string_view base, std::string_view path) {
   if (base.empty()) return std::string(path);
   std::string result(base);
 #ifdef BOOST_MSVC
@@ -74,10 +73,10 @@ std::string path_cat(beast::string_view base, beast::string_view path) {
 // contents of the request, so the interface requires the
 // caller to pass a generic lambda for receiving the response.
 template <class Body, class Allocator, class Send>
-void handle_request(beast::string_view doc_root, http::request<Body, http::basic_fields<Allocator>>&& req,
+void handle_request(std::string_view doc_root, http::request<Body, http::basic_fields<Allocator>>&& req,
                     Send&& send) {
   // Returns a bad request response
-  auto const bad_request = [&req](beast::string_view why) {
+  auto const bad_request = [&req](std::string_view why) {
     http::response<http::string_body> res{http::status::bad_request, req.version()};
     res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
     res.set(http::field::content_type, "text/html");
@@ -88,7 +87,7 @@ void handle_request(beast::string_view doc_root, http::request<Body, http::basic
   };
 
   // Returns a not found response
-  auto const not_found = [&req](beast::string_view target) {
+  auto const not_found = [&req](std::string_view target) {
     http::response<http::string_body> res{http::status::not_found, req.version()};
     res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
     res.set(http::field::content_type, "text/html");
@@ -99,7 +98,7 @@ void handle_request(beast::string_view doc_root, http::request<Body, http::basic
   };
 
   // Returns a server error response
-  auto const server_error = [&req](beast::string_view what) {
+  auto const server_error = [&req](std::string_view what) {
     http::response<http::string_body> res{http::status::internal_server_error, req.version()};
     res.set(http::field::server, BOOST_BEAST_VERSION_STRING);
     res.set(http::field::content_type, "text/html");
@@ -114,11 +113,11 @@ void handle_request(beast::string_view doc_root, http::request<Body, http::basic
     return send(bad_request("Unknown HTTP-method"));
 
   // Request path must be absolute and not contain "..".
-  if (req.target().empty() || req.target()[0] != '/' || req.target().find("..") != beast::string_view::npos)
+  if (req.target().empty() || req.target()[0] != '/' || req.target().find("..") != std::string_view::npos)
     return send(bad_request("Illegal request-target"));
 
   // Build the path to the requested file
-  std::string path = path_cat(doc_root, req.target());
+  std::string path = path_cat(doc_root, std::string_view(req.target().data(), req.target().size()));
   if (req.target().back() == '/') path.append("index.html");
 
   // Attempt to open the file
@@ -127,7 +126,7 @@ void handle_request(beast::string_view doc_root, http::request<Body, http::basic
   body.open(path.c_str(), beast::file_mode::scan, ec);
 
   // Handle the case where the file doesn't exist
-  if (ec == boost::system::errc::no_such_file_or_directory) return send(not_found(req.target()));
+  if (ec == boost::system::errc::no_such_file_or_directory) return send(not_found(std::string_view(req.target().data(), req.target().size())));
 
   // Handle an unknown error
   if (ec) return send(server_error(ec.message()));
@@ -167,7 +166,7 @@ struct http_session::send_lambda {
     // The lifetime of the message has to extend
     // for the duration of the async operation so
     // we use a shared_ptr to manage it.
-    auto sp = boost::make_shared<http::message<isRequest, Body, Fields>>(std::move(msg));
+    auto sp = std::make_shared<http::message<isRequest, Body, Fields>>(std::move(msg));
 
     // Write the response
     auto self = self_.shared_from_this();
@@ -179,7 +178,7 @@ struct http_session::send_lambda {
 
 //------------------------------------------------------------------------------
 
-http_session::http_session(tcp::socket&& socket, boost::shared_ptr<shared_state> const& state)
+http_session::http_session(tcp::socket&& socket, std::shared_ptr<shared_state> const& state)
     : stream_(std::move(socket)), state_(state) {}
 
 void http_session::run() {
@@ -224,7 +223,7 @@ void http_session::on_read(beast::error_code ec, std::size_t) {
   if (websocket::is_upgrade(parser_->get())) {
     // Create a websocket session, transferring ownership
     // of both the socket and the HTTP request.
-    boost::make_shared<websocket_session>(stream_.release_socket(), state_)->run(parser_->release());
+    std::make_shared<websocket_session>(stream_.release_socket(), state_)->run(parser_->release());
     return;
   }
 
@@ -239,7 +238,7 @@ void http_session::on_read(beast::error_code ec, std::size_t) {
     // for the duration of the async operation so
     // we use a shared_ptr to manage it.
     using response_type = typename std::decay<decltype(response)>::type;
-    auto sp = boost::make_shared<response_type>(std::forward<decltype(response)>(response));
+    auto sp = std::make_shared<response_type>(std::forward<decltype(response)>(response));
 
 #if 0
             // NOTE This causes an ICE in gcc 7.3

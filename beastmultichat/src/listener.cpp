@@ -13,7 +13,7 @@
 
 #include "http_session.hpp"
 
-listener::listener(net::io_context& ioc, tcp::endpoint endpoint, boost::shared_ptr<shared_state> const& state)
+listener::listener(net::io_context& ioc, tcp::endpoint endpoint, std::shared_ptr<shared_state> const& state)
     : ioc_(ioc), acceptor_(ioc), state_(state) {
   beast::error_code ec;
 
@@ -64,7 +64,7 @@ void listener::on_accept(beast::error_code ec, tcp::socket socket) {
     return fail(ec, "accept");
   else
     // Launch a new session for this connection
-    boost::make_shared<http_session>(std::move(socket), state_)->run();
+    std::make_shared<http_session>(std::move(socket), state_)->run();
 
   // The new connection gets its own strand
   acceptor_.async_accept(net::make_strand(ioc_), beast::bind_front_handler(&listener::on_accept, shared_from_this()));

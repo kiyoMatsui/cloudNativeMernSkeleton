@@ -11,7 +11,7 @@
 
 #include <iostream>
 
-websocket_session::websocket_session(tcp::socket&& socket, boost::shared_ptr<shared_state> const& state)
+websocket_session::websocket_session(tcp::socket&& socket, std::shared_ptr<shared_state> const& state)
     : ws_(std::move(socket)), state_(state) {}
 
 websocket_session::~websocket_session() {
@@ -51,7 +51,7 @@ void websocket_session::on_read(beast::error_code ec, std::size_t) {
   ws_.async_read(buffer_, beast::bind_front_handler(&websocket_session::on_read, shared_from_this()));
 }
 
-void websocket_session::send(boost::shared_ptr<std::string const> const& ss) {
+void websocket_session::send(std::shared_ptr<std::string const> const& ss) {
   // Post our work to the strand, this ensures
   // that the members of `this` will not be
   // accessed concurrently.
@@ -59,7 +59,7 @@ void websocket_session::send(boost::shared_ptr<std::string const> const& ss) {
   net::post(ws_.get_executor(), beast::bind_front_handler(&websocket_session::on_send, shared_from_this(), ss));
 }
 
-void websocket_session::on_send(boost::shared_ptr<std::string const> const& ss) {
+void websocket_session::on_send(std::shared_ptr<std::string const> const& ss) {
   // Always add to queue
   queue_.push_back(ss);
 
