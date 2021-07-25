@@ -5,6 +5,7 @@ config/mongo/*
 mernapp/node_modules/
 mernapp/dist
 beastmultichat/build/
+beastmultichat/rtagsDir/
 
 logs
 *.log
