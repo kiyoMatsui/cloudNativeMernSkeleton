@@ -25,16 +25,16 @@ services:
 #      - "443:443"
 #    networks:
 #      - backend
-#    depends_on: 
+#    depends_on:
 #      - mernapp
 #    volumes:
 #      - ./mernapp/dist:/srv/www/static
 #      - ./config/nginx/nginxConfig.conf:/etc/nginx/conf.d/default.conf
 #      - ./config/nginx:/etc/nginx/ssl
-#      
+#
 #  mernapp:
 #    container_name: mernapp
-#    build: 
+#    build:
 #      context: './mernapp'
 #      dockerfile: 'Dockerfile'
 #    ports:
@@ -42,7 +42,7 @@ services:
 #      - "9229:9229"
 #    networks:
 #      - backend
-#    depends_on: 
+#    depends_on:
 #      - mongodb
 #    environment:
 #      - NODE_ENV=development

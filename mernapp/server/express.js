@@ -1,5 +1,6 @@
 import express from 'express'
 import path from 'path'
+import bodyParser from 'body-parser'
 import cookieParser from 'cookie-parser'
 import compress from 'compression'
 import cors from 'cors'
@@ -7,6 +8,7 @@ import helmet from 'helmet'
 import Template from './../template'
 import userRoutes from './routes/user.routes'
 import authRoutes from './routes/auth.routes'
+import mediaRoutes from './routes/media.routes'
 
 // modules for server side rendering
 import React from 'react'
@@ -18,6 +20,12 @@ import { ServerStyleSheets, ThemeProvider } from '@material-ui/styles'
 import theme from './../client/theme'
 //end
 
+//For SSR with data
+import { matchRoutes } from 'react-router-config'
+import routes from './../client/routeConfig'
+import 'isomorphic-fetch'
+//end
+
 //comment out before building for production
 import devBundle from './devBundle'
 
@@ -27,9 +35,22 @@ const app = express()
 //comment out before building for production
 devBundle.compile(app)
 
+//For SSR with data
+const loadBranchData = (location) => {
+  const branch = 
+
+  matchRoutes(routes, location)
+  const promises = branch.map(({ route, match }) => {
+    return route.loadData
+      ? route.loadData(branch[0].match.params)
+      : Promise.resolve(null)
+  })
+  return Promise.all(promises)
+}
+
 // parse body params and attache them to req.body
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
+app.use(bodyParser.json())
+app.use(bodyParser.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(compress())
 // secure apps by setting various HTTP headers
@@ -42,27 +63,33 @@ app.use('/dist', express.static(path.join(CURRENT_WORKING_DIR, 'dist')))
 // mount routes
 app.use('/', userRoutes)
 app.use('/', authRoutes)
+app.use('/', mediaRoutes)
 
 app.get('*', (req, res) => {
   const sheets = new ServerStyleSheets()
   const context = {}
-  const markup = ReactDOMServer.renderToString(
-    sheets.collect(
-          <StaticRouter location={req.url} context={context}>
-            <ThemeProvider theme={theme}>
-              <MainRouter />
-            </ThemeProvider>
+
+   loadBranchData(req.url).then(data => {
+       const markup = ReactDOMServer.renderToString(
+        sheets.collect(
+         <StaticRouter location={req.url} context={context}>
+             <ThemeProvider theme={theme}>
+                  <MainRouter data={data}/>
+             </ThemeProvider>
           </StaticRouter>
         )
-    )
-    if (context.url) {
-      return res.redirect(303, context.url)
-    }
-    const css = sheets.toString()
-    res.status(200).send(Template({
-      markup: markup,
-      css: css
-    }))
+      )
+       if (context.url) {
+        return res.redirect(303, context.url)
+       }
+       const css = sheets.toString()
+       res.status(200).send(Template({
+          markup: markup,
+          css: css
+       }))
+   }).catch(err => {
+      res.status(500).send({"error": "Could not load React view with data"})
+  })
 })
 
 // Catch unauthorised errors

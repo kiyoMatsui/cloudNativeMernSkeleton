@@ -1,4 +1,4 @@
-FROM bitnami/node:latest
+FROM bitnami/node:16.16.0
 
 COPY . /app
 

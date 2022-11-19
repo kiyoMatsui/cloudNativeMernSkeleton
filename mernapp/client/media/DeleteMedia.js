@@ -9,25 +9,25 @@ import DialogContent from '@material-ui/core/DialogContent'
 import DialogContentText from '@material-ui/core/DialogContentText'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import auth from './../auth/auth-helper'
-import {remove} from './api-user.js'
+import {remove} from './api-media.js'
 import {Redirect} from 'react-router-dom'
 
-export default function DeleteUser(props) {
+export default function DeleteMedia(props) {
   const [open, setOpen] = useState(false)
   const [redirect, setRedirect] = useState(false)
-
+  
   const jwt = auth.isAuthenticated()
   const clickButton = () => {
     setOpen(true)
   }
-  const deleteAccount = () => { 
+  const deleteMedia = () => {
+    const jwt = auth.isAuthenticated()
     remove({
-      userId: props.userId
+      mediaId: props.mediaId
     }, {t: jwt.token}).then((data) => {
-      if (data && data.error) {
+      if (data.error) {
         console.log(data.error)
       } else {
-        auth.clearJWT(() => console.log('deleted'))
         setRedirect(true)
       }
     })
@@ -35,35 +35,34 @@ export default function DeleteUser(props) {
   const handleRequestClose = () => {
     setOpen(false)
   }
-
   if (redirect) {
     return <Redirect to='/'/>
   }
-    return (<span>
-      <IconButton aria-label="Delete" onClick={clickButton} color="secondary">
-        <DeleteIcon/>
-      </IconButton>
+  return (<span>
+    <IconButton aria-label="Delete" onClick={clickButton} color="secondary">
+      <DeleteIcon/>
+    </IconButton>
 
-      <Dialog open={open} onClose={handleRequestClose}>
-        <DialogTitle>{"Delete Account"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Confirm to delete your account.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleRequestClose} color="primary">
-            Cancel
-          </Button>
-          <Button onClick={deleteAccount} color="secondary" autoFocus="autoFocus">
-            Confirm
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </span>)
-
-}
-DeleteUser.propTypes = {
-  userId: PropTypes.string.isRequired
+    <Dialog open={open} onClose={handleRequestClose}>
+      <DialogTitle>{"Delete "+props.mediaTitle}</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          Confirm to delete {props.mediaTitle} from your account.
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleRequestClose} color="primary">
+          Cancel
+        </Button>
+        <Button onClick={deleteMedia} variant="contained" color="secondary" autoFocus="autoFocus">
+          Confirm
+        </Button>
+      </DialogActions>
+    </Dialog>
+  </span>)
 }
 
+DeleteMedia.propTypes = {
+  mediaId: PropTypes.string.isRequired,
+  mediaTitle: PropTypes.string.isRequired
+}
